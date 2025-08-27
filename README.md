@@ -3,11 +3,13 @@
 Este proyecto es una aplicación Spring Boot para la gestión de pedidos. Utiliza MySQL como base de datos y está estructurado siguiendo buenas prácticas de desarrollo en Java.
 
 ## Requisitos
+
 - Java 8 o superior
 - Maven
 - MySQL
 
 ## Configuración
+
 Antes de ejecutar el proyecto, asegúrate de que el archivo `src/main/resources/application.properties` existe y contiene las siguientes configuraciones:
 
 ```
@@ -23,18 +25,23 @@ logging.level.org.hibernate.SQL=debug #para ver las consultas
 Puedes modificar los valores según tu entorno local (usuario, contraseña, nombre de la base de datos, etc).
 
 ## Ejecución
+
 1. Instala las dependencias:
+
    ```
    ./mvnw clean install
    ```
+
 2. Ejecuta la aplicación:
-   ```
+
+```
    ./mvnw spring-boot:run
    ```
 
 La aplicación estará disponible en `http://localhost:8080`.
 
 ## Estructura del proyecto
+
 - `controllers/`: Controladores REST
 - `models/`: Entidades JPA
 - `repositories/`: Repositorios Spring Data
@@ -42,5 +49,5 @@ La aplicación estará disponible en `http://localhost:8080`.
 - `templates/`: Vistas HTML (Thymeleaf)
 
 ## Autor
-- Daniel Cuatin
 
+- Daniel Cuatin
