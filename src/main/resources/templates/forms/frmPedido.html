@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}"
+>
+    <head>
+        <title>Crear Pedido</title>
+    </head>
+    <body>
+        <div layout:fragment="page-title">
+            <h1 class="h2">Crear Pedido</h1>
+        </div>
+        <div layout:fragment="content">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Detalles del Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <form id="pedidoForm" method="POST">
+                        <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label for="cliente" class="form-label">Cliente:</label>
+                            <input
+                            id="cliente"
+                            type="text"
+                            class="form-control"
+                            name="cliente"
+                            th:value="${pedido.cliente}"
+                            required
+                            />
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="fecha" class="form-label">Fecha:</label>
+                            <input
+                            id="fecha"
+                            type="date"
+                            class="form-control"
+                            name="fecha"
+                            th:value="${#dates.format(pedido.fecha, 'yyyy-MM-dd')}"
+                            required
+                            />
+                            <input id="pedidoId" type="hidden" name="pedidoId" th:value="${pedido.id}" />
+                        </div>
+                        </div>
+                        <div id="productFields">
+                            <div class="row mb-3 clone" th:each="detalle: ${pedido.detalles}">
+                                <div class="col">
+                                <input type="hidden" name="detalleId[]" th:value="${detalle.id}" th:file="${detalle.id}" />
+                                <input
+                                    type="text"
+                                    name="producto[]"
+                                    class="form-control mb-2"
+                                    placeholder="Producto"
+                                    th:value="${detalle.producto}"
+                                    required
+                                />
+                                </div>
+                                <div class="col">
+                                <input
+                                    type="number"
+                                    name="cantidad[]"
+                                    class="form-control mb-2"
+                                    placeholder="Cantidad"
+                                    th:value="${detalle.cantidad}"
+                                    required
+                                />
+                                </div>
+                                <div class="col">
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    name="precio[]"
+                                    class="form-control mb-2"
+                                    placeholder="Precio"
+                                    th:value="${detalle.precio}"
+                                    required
+                                />
+                                </div>
+                            </div>
+                        </div>
+                        <input class="btn btn-success" type="submit" value="Guardar" />
+                        <a class="btn btn-primary"  href="/">Cancelar</a> 
+                    </form>
+                </div>
+            </div>
+        <div>
+        <script th:src="@{/js/jquery-3.7.1.slim.js}" integrity="sha256-UgvvN8vBkgO0luPSUl2s8TIlOSYRoGFAX4jlCIm9Adc=" crossorigin="anonymous"></script>
+         <script type="text/javascript" layout:fragment="codejs">
+            $(document).ready(function(){
+                $("#pedidoForm").on("submit", async function (e) {
+                    e.preventDefault();
+                    var pedido = {};
+                    var cliente = $("#cliente").val();
+                    var fecha = $("#fecha").val();
+                    pedido.cliente = cliente;
+                    pedido.fecha = fecha;
+                    pedido.id = $("#pedidoId").val();
+                    var productos = [];
+                    $("input[name='producto[]']").each(function (index, value){
+                        var producto = {};
+                        producto.producto = $(this).val();
+                        producto.id = $("input[name='detalleId[]']").eq(index).val();
+                        producto.cantidad = $("input[name='cantidad[]']").eq(index).val();
+                        producto.precio = $("input[name='precio[]']").eq(index).val();
+                        productos.push(producto);
+                    })
+                    pedido.detalles = productos;
+                    if(navigator.onLine){
+                        try{
+                            const response = await fetch("/pedidos/guardar", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify(pedido)
+                            });
+                            if(response.ok){
+                                notification("Pedido guardado con éxito.", "success");
+                                setTimeout(function () {
+                                    window.location.href = "/";
+                                }, 3000);
+                            }else{
+                                showNotification("Error al guardar el pedido. Inténtelo de nuevo.", "error");
+                            }
+                        }
+                        catch(error){
+                            console.error("Error al guardar el pedido:", error);
+                            showNotification("Error al guardar el pedido. Inténtelo de nuevo.", "error");
+                        }
+                    } else {
+                        showNotification("No hay conexión a Internet. El pedido se guardará localmente y se sincronizará cuando vuelva a estar en línea.", "warning");
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

@@ -33,7 +33,8 @@ async function sincronizarPedidos() {
 }
 
 async function sendForm(pedido){
-	return await fetch("/pedir", {
+  console.log("Enviando pedido:", pedido);
+	return await fetch("/pedidos/insertar", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",

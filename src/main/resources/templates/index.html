@@ -1,137 +1,205 @@
+<!-- Usar layout.html como plantilla base -->
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org" 
-xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
-layout:decorate="~{layout}">
-<head th:replace="~{layout :: header-fragment}">
-	<title>Index</title>
-</head>
-<body>
-	<div th:replace="~{layout :: header}"></div>
-	<div th:replace="~{layout :: sidebar}">Pedidos</div>
-		<!--  <div class="container-fluid">
-		<div class="row">
-			
-			<div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
-				<div class="table-responsive small">
-					<table class="table table-striped">
-						<thead>
-							<tr>
-								<th>ID</th>
-								<th>Fecha</th>
-								<th>Cliente</th>
-								<th>Estado</th>		
-								<th>&nbsp;</th>
-							</tr>		
-						</thead>
-						<tbody>
-							<tr th:each="pedido:${pedidos}">
-								<td th:text="${pedido.id}"></td>
-								<td th:text="${pedido.fecha}"></td>
-								<td th:text="${pedido.cliente}"></td>
-								<td th:text="${pedido.activo}"></td>
-								<td>
-									<a href="@{pedido}/${pedido.id}">ir</a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</div>
-			<div class="header"><h2>Pedidos</h2></div>
-			<div class="alert alert-danger" role="alert" id="offlineAlert" style="display:none;">
-				No hay conexión a internet. Los pedidos se guardarán localmente y se sincronizarán cuando vuelva la conexión.			</div>
-			<form id="pedidoForm" method="post" >
-				<label>Cliente:</label>
-				<input type="text" name="cliente" required>
-				<label>Fecha:</label>
-				<input type="date" name="fecha" required>
-				<div id="addFields">
-					<input type="text" name="producto[]" placeholder="Producto" required>
-					<input type="number" name="cantidad[]" placeholder="Cantidad" required>
-					<input type="number" step="0.1" name="precio[]" placeholder="Precio" required>
-				</div>
-				<button class="btn btn-primary" type="button" onclick="addFields();">Agregar Producto</button>
-				<input  class="btn btn-success" type="submit" value="Crear Pedido">
-			</form>
-		</div>
-		
-	</div>
-
-	<form method="post" th:action="@{/pedido}">
-		<label>Nombre:</label>
-		<input type="text" th:field="*{nombre}">
-	</form>
-	-->
-	<script th:src="@{/js/jquery-3.7.1.slim.js}" integrity="sha256-UgvvN8vBkgO0luPSUl2s8TIlOSYRoGFAX4jlCIm9Adc=" crossorigin="anonymous"></script>
-	<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
-	<script th:src="@{/js/toastify.js}" type="text/javascript"></script>
-	<script th:src="@{/js/sincronizacion.js}" type="text/javascript"></script>
-	<script type="text/javascript">
-		function addFields() {
-			var field = '<input type="text" name="producto[]" placeholder="Producto" required><input type="number" name="cantidad[]" placeholder="Cantidad" required><input type="number" step="0.1" name="precio[]" placeholder="Precio" required>';
-			$('#addFields').append(field);
-		}
-		function notification(message, type='success'){
-			Toastify({
-				text: message,
-				duration: 3000,
-				close: true,
-				gravity: "top", // `top` or `bottom`
-				position: 'right', // `left`, `center` or `right`
-				backgroundColor: type=='success'?"#4fbe87":"#ff6b6b",
-				stopOnFocus: true, // Prevents dismissing of toast on hover
-			}).showToast();
-		}
-		$(document).ready(function(){
-			$('#pedidoForm').on('submit', async function(e){
-				e.preventDefault();
-				var pedido = {};
-				var cliente = $('input[name="cliente"]').val();
-				var fecha = $('input[name="fecha"]').val();
-				pedido.cliente = cliente;
-				pedido.fecha = fecha;
-				var productos = [];
-				$('input[name="producto[]"]').each(function(index, value){
-					var producto = {};
-					producto.producto = $(this).val();
-					producto.cantidad = $('input[name="cantidad[]"]').eq(index).val();
-					producto.precio = $('input[name="precio[]"]').eq(index).val();
-					productos.push(producto); 
-				});
-				pedido.detalles = productos;
-				if(navigator.onLine){
-					try{
-						const response = await sendForm(pedido);
-						if(response.ok){
-							$('#pedidoForm')[0].reset();
-							setTimeout(function(){location.reload();}, 3000);
-							notification("Pedido enviado con éxito.", 'success');
-						} else {
-							notification("Error al enviar el pedido. Intente nuevamente.", 'error');
-						}						
-					} catch (error) {
-						notification("Error al enviar el pedido. Intente nuevamente.", 'error');
-					}
-				} else {
-					guardarPedidoEnLocal(pedido);
-					$('#pedidoForm')[0].reset();
-				}
-			});
-			function actualizarEstadoConexion(){
-				if(navigator.onLine){
-					$('#offlineAlert').hide();
-					sincronizarPedidos();
-				} else {
-					$('#offlineAlert').show();
-				}
-			}
-			window.addEventListener('online', actualizarEstadoConexion);
-			window.addEventListener('offline', actualizarEstadoConexion);
-			document.addEventListener('DOMContentLoaded', function() {
-				actualizarEstadoConexion();
-			});	
-		});
-		
-	</script>
-</body>
+<html
+  xmlns:th="http://thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <title>Index</title>
+    <!-- El head se hereda de layout.html -->
+  </head>
+  <body>
+    <!-- Título de la página -->
+    <div layout:fragment="page-title">
+      <h1 class="h2">Inicio</h1>
+    </div>
+    <!-- Contenido principal -->
+    <div layout:fragment="content">
+      <div
+        class="alert alert-danger"
+        role="alert"
+        id="offlineAlert"
+        style="display: none"
+      >
+        No hay conexión a internet. Los pedidos se guardarán localmente y se
+        sincronizarán cuando vuelva la conexión.
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Crear Nuevo Pedido</h5>
+        </div>
+        <div class="card-body">
+          <form id="pedidoForm">
+            <div class="row mb-3">
+              <div class="col-sm-6">
+                <label for="cliente" class="form-label">Cliente:</label>
+                <input
+                  id="cliente"
+                  type="text"
+                  class="form-control"
+                  name="cliente"
+                  required
+                />
+              </div>
+              <div class="col-sm-6">
+                <label for="fecha" class="form-label">Fecha:</label>
+                <input
+                  id="fecha"
+                  type="date"
+                  class="form-control"
+                  name="fecha"
+                  required
+                />
+              </div>
+            </div>
+            <div id="productFields">
+              <div class="row mb-3 clone" id="addFields">
+                <div class="col">
+                  <input
+                    type="text"
+                    name="producto[]"
+                    class="form-control mb-2"
+                    placeholder="Producto"
+                    required
+                  />
+                </div>
+                <div class="col">
+                  <input
+                    type="number"
+                    name="cantidad[]"
+                    class="form-control mb-2"
+                    placeholder="Cantidad"
+                    required
+                  />
+                </div>
+                <div class="col">
+                  <input
+                    type="number"
+                    step="0.1"
+                    name="precio[]"
+                    class="form-control mb-2"
+                    placeholder="Precio"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary" type="button" id="btnAddField">
+              Agregar Producto
+            </button>
+            <input class="btn btn-success" type="submit" value="Crear Pedido" />
+          </form>
+        </div>
+      </div>
+      <div class="table-responsive small">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Detalle</th>
+              <th>&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="pedido:${pedidos}">
+              <td th:text="${pedido.id}"></td>
+              <td th:text="${pedido.fecha}"></td>
+              <td th:text="${pedido.cliente}"></td>
+              <td>
+                <table border="1" class="table table-sm table-bordered">
+                  <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                  </tr>
+                  <tr th:each="detalle:${pedido.detalles}">
+                    <td th:text="${detalle.producto}"></td>
+                    <td th:text="${detalle.cantidad}"></td>
+                    <td th:text="${detalle.precio}"></td>
+                  </tr>
+                </table>
+              </td>
+              <td>
+                <a
+                  class="btn btn-primary btn-sm"
+                  th:href="@{pedidos/editar/}+${pedido.id}"
+                  ><i class="bi bi-pencil-square">Editar</i></a
+                >
+                <a th:href="@{pedidos/eliminar/}+${pedido.id}" class="btn btn-danger btn-sm" type="button" onclick="return confirm('¿Desea eliminar el pedido?')"><i class="bi bi-trash">Eliminar</i></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <script type="text/javascript" layout:fragment="codejs">
+      $(document).ready(function () {
+        $("#btnAddField").on("click", function addFields() {
+          const clone = $("#addFields").clone(true).find("input").val("").end();
+          clone.removeAttr("id");
+          clone.find("input").val("");
+          $("#productFields").append(clone);
+        });
+        $("#pedidoForm").on("submit", async function (e) {
+          e.preventDefault();
+          var pedido = {};
+          var cliente = $('input[name="cliente"]').val();
+          var fecha = $('input[name="fecha"]').val();
+          pedido.cliente = cliente;
+          pedido.fecha = fecha;
+          var productos = [];
+          $('input[name="producto[]"]').each(function (index, value) {
+            var producto = {};
+            producto.producto = $(this).val();
+            producto.cantidad = $('input[name="cantidad[]"]').eq(index).val();
+            producto.precio = $('input[name="precio[]"]').eq(index).val();
+            productos.push(producto);
+          });
+          pedido.detalles = productos;
+          if (navigator.onLine) {
+            try {
+              const response = await sendForm(pedido);
+              console.log(response);
+              if (response.ok) {
+                $("#pedidoForm")[0].reset();
+                setTimeout(function () {
+                  location.reload();
+                }, 3000);
+                notification("Pedido enviado con éxito.", "success");
+              } else {
+                notification(
+                  "Error al enviar el pedido. Intente nuevamente.",
+                  "error"
+                );
+              }
+            } catch (error) {
+              notification(
+                "Error al enviar el pedido. Intente nuevamente.",
+                "error"
+              );
+            }
+          } else {
+            guardarPedidoEnLocal(pedido);
+            $("#pedidoForm")[0].reset();
+          }
+        });
+        function actualizarEstadoConexion() {
+          if (navigator.onLine) {
+            $("#offlineAlert").hide();
+            sincronizarPedidos();
+          } else {
+            $("#offlineAlert").show();
+          }
+        }
+        window.addEventListener("online", actualizarEstadoConexion);
+        window.addEventListener("offline", actualizarEstadoConexion);
+        document.addEventListener("DOMContentLoaded", function () {
+          actualizarEstadoConexion();
+        });
+      });
+    </script>
+  </body>
 </html>

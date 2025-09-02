@@ -27,6 +27,6 @@ public class DetallePedidoServiceImpl implements DetallePedidoService{
 
 	@Override
 	public List<DetallePedido> listarDetalle() {
-		return detallePedidoRepository.findAll();
+		return detallePedidoRepository.findByActivo(true);
 	}
 }

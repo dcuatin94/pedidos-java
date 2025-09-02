@@ -26,7 +26,26 @@ public class PedidoServiceImpl implements PedidoService{
 
 	@Override
 	public List<Pedido> listarPedidos() {
-		return pedidoRepository.findAll();
+		// return pedidoRepository.findAll();
+		return pedidoRepository.findByActivo(true);
+	}
+
+	@Override
+	public Pedido findById(int id) {
+		try {
+			return pedidoRepository.findById(id).orElse(null);
+		} catch (Exception e) {
+			throw new UnsupportedOperationException("Unimplemented method 'findById'");
+		}
+	}
+
+	@Override
+	public List<Pedido> findByActivo() {
+		try {
+			return pedidoRepository.findByActivo(true);
+		} catch (Exception e) {
+			throw new UnsupportedOperationException("Unimplemented method 'findByActiv'");
+		}
 	}
 
 }

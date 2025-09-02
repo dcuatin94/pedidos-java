@@ -23,6 +23,7 @@ public class DetallePedido implements Serializable{
 	private String producto;
 	private double cantidad;
 	private double precio;
+	private boolean activo = true;
 	@ManyToOne
 	@JoinColumn(name="pedido_id")
 	private Pedido pedido;
